@@ -13,7 +13,7 @@ import {
   User
 } from "firebase/auth";
 import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, deleteDoc, doc } from "firebase/firestore";
-import { LogOut, Upload, Plus, Trash2, Chrome } from "lucide-react";
+import { LogOut, Upload, Plus, Trash2 } from "lucide-react";
 
 const ADMIN_EMAIL = "gurunanakmissiongurdwara@gmail.com";
 
