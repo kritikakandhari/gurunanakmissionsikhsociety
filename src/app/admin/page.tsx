@@ -17,6 +17,47 @@ import { LogOut, Upload, Plus, Trash2 } from "lucide-react";
 
 const ADMIN_EMAIL = "gurunanakmissiongurdwara@gmail.com";
 
+// Helper to compress image and convert to base64
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        // Compress as JPEG with 0.75 quality
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
+};
+
 interface MediaInput {
   id: string;
   type: "image" | "youtube";
@@ -127,7 +168,18 @@ export default function AdminPage() {
   };
 
   const addMediaItem = (type: "image" | "youtube") => {
-    setMediaItems([...mediaItems, { id: Math.random().toString(), type }]);
+    setMediaItems(prev => [...prev, { id: Math.random().toString(), type }]);
+  };
+
+  const handleMultipleFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const newItems: MediaInput[] = Array.from(files).map(file => ({
+      id: Math.random().toString(),
+      type: "image" as const,
+      file,
+      previewUrl: URL.createObjectURL(file)
+    }));
+    setMediaItems(prev => [...prev, ...newItems]);
   };
 
   const removeMediaItem = (id: string) => {
@@ -158,13 +210,8 @@ export default function AdminPage() {
       const finalMedia = [];
       for (const item of mediaItems) {
         if (item.type === "image" && item.file) {
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(item.file!);
-          });
-          finalMedia.push({ type: "image", data: base64 });
+          const compressedBase64 = await compressImage(item.file);
+          finalMedia.push({ type: "image", data: compressedBase64 });
         } else if (item.type === "youtube" && item.youtubeId) {
           finalMedia.push({ type: "youtube", data: item.youtubeId });
         }
@@ -179,7 +226,8 @@ export default function AdminPage() {
       setMessage("Successfully published to gallery!");
       setHeading(""); setDesc(""); setDate(""); setMediaItems([]);
     } catch (error: any) {
-      setMessage("Upload failed: " + error.message);
+      console.error("Upload error:", error);
+      setMessage("Upload failed: " + (error.message || "Unknown error occurred"));
     } finally {
       setLoading(false);
     }
@@ -281,30 +329,47 @@ export default function AdminPage() {
                     </div>
 
                     <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-slate-800">2. Add Media</h3>
-                        <div className="flex gap-2">
-                          <button type="button" onClick={() => addMediaItem("image")} className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md hover:bg-blue-200 font-medium"><Plus size={16} /> Image</button>
-                          <button type="button" onClick={() => addMediaItem("youtube")} className="flex items-center gap-1 text-sm bg-red-100 text-red-700 px-3 py-1.5 rounded-md hover:bg-red-200 font-medium"><Plus size={16} /> YouTube</button>
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-slate-800">2. Add Media</h3>
+                          <p className="text-xs text-slate-500">You can select multiple photos at once or add YouTube links.</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <label className="flex items-center gap-1.5 text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium cursor-pointer shadow-sm transition-colors">
+                            <Plus size={16} /> Choose Multiple Photos
+                            <input 
+                              type="file" 
+                              multiple 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => handleMultipleFiles(e.target.files)} 
+                            />
+                          </label>
+                          <button type="button" onClick={() => addMediaItem("youtube")} className="flex items-center gap-1.5 text-sm bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 font-medium transition-colors">
+                            <Plus size={16} /> YouTube Link
+                          </button>
                         </div>
                       </div>
                       {mediaItems.length === 0 && (
-                        <div className="text-center py-8 text-slate-500 border-2 border-dashed border-slate-300 rounded-lg">Click the buttons above to add photos or YouTube videos.</div>
+                        <div className="text-center py-10 text-slate-500 border-2 border-dashed border-slate-300 rounded-xl bg-white">
+                          <p className="font-medium text-slate-700 mb-1">No media selected yet</p>
+                          <p className="text-xs text-slate-400">Click &quot;Choose Multiple Photos&quot; above to select all pictures from your folder at once.</p>
+                        </div>
                       )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {mediaItems.map((item, index) => (
-                          <div key={item.id} className="relative p-4 bg-white border border-slate-200 rounded-lg shadow-sm">
-                            <button type="button" onClick={() => removeMediaItem(item.id)} className="absolute top-2 right-2 text-slate-400 hover:text-red-500"><Trash2 size={18} /></button>
+                          <div key={item.id} className="relative p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition-colors">
+                            <button type="button" onClick={() => removeMediaItem(item.id)} className="absolute top-2 right-2 text-slate-400 hover:text-red-500 p-1 rounded-md hover:bg-slate-50 transition-colors" title="Remove"><Trash2 size={18} /></button>
                             <p className="font-semibold text-sm mb-3 text-slate-700">Media {index + 1} ({item.type === "image" ? "Photo" : "YouTube"})</p>
                             {item.type === "image" ? (
                               <div>
-                                <input type="file" accept="image/*" onChange={(e) => handleFileChange(item.id, e.target.files?.[0] || null)} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                                {item.previewUrl && <img src={item.previewUrl} alt="Preview" className="mt-3 h-24 object-cover rounded-md border border-slate-200" />}
+                                <input type="file" accept="image/*" onChange={(e) => handleFileChange(item.id, e.target.files?.[0] || null)} className="w-full text-sm text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                {item.previewUrl && <img src={item.previewUrl} alt="Preview" className="mt-3 h-28 w-full object-cover rounded-lg border border-slate-200" />}
                               </div>
                             ) : (
                               <div>
                                 <input type="url" placeholder="Paste YouTube Link here..." onChange={(e) => handleYouTubeChange(item.id, e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-md outline-none text-sm focus:ring-1 focus:ring-blue-500" />
-                                {item.youtubeId && <img src={`https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`} alt="YT Preview" className="mt-3 h-24 object-cover rounded-md border border-slate-200" />}
+                                {item.youtubeId && <img src={`https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`} alt="YT Preview" className="mt-3 h-28 w-full object-cover rounded-lg border border-slate-200" />}
                               </div>
                             )}
                           </div>
