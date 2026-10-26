@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
 import ScrollRevealText from "@/components/ScrollRevealText";
+import AboutGuruji from "@/components/AboutGuruji";
 import Reviews from "@/components/Reviews";
 
 export default function Home() {
@@ -11,14 +12,17 @@ export default function Home() {
       <Hero />
       
       {/* Scroll Reveal Section */}
-      <section className="py-32 px-4 bg-white overflow-hidden">
+      <section className="py-14 md:py-24 px-4 bg-white overflow-hidden">
         <div className="max-w-5xl mx-auto">
           <ScrollRevealText 
-            text="Truth is the highest virtue, but higher still is truthful living. Recognize the whole human race as one. Let no man in the world live in delusion." 
-            className="text-4xl md:text-6xl font-bold leading-tight md:leading-tight"
+            text="Janamsthan Gurunanak Sahib." 
+            className="text-3xl sm:text-4xl md:text-6xl font-bold leading-snug md:leading-tight text-center"
           />
         </div>
       </section>
+
+      {/* Guru Nanak Dev Ji Teachings & Image Section */}
+      <AboutGuruji />
 
       {/* Short welcome section on home page */}
       <section className="py-24 px-4 text-center bg-blue-900 text-white">

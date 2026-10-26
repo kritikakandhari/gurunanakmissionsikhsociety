@@ -8,39 +8,41 @@ export default function AboutGuruji() {
   const { language } = useLanguage();
 
   return (
-    <section id="about" className="py-24 bg-white overflow-hidden">
+    <section id="about" className="py-12 md:py-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center gap-16">
+        <div className="flex flex-col lg:flex-row items-center gap-10 md:gap-16">
           <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="w-full lg:w-1/2"
+            transition={{ duration: 0.6 }}
+            className="w-full lg:w-1/2 flex justify-center"
           >
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/5] max-w-md mx-auto lg:mx-0">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/5] w-full max-w-[280px] sm:max-w-sm md:max-w-md">
               <Image 
                 src="/images/gurunanak.webp" 
                 alt="Guru Nanak Dev Ji"
                 fill
+                priority
                 className="object-cover"
+                sizes="(max-width: 768px) 280px, 450px"
               />
             </div>
           </motion.div>
 
           <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="w-full lg:w-1/2 space-y-6"
+            transition={{ duration: 0.6 }}
+            className="w-full lg:w-1/2 space-y-4 md:space-y-6 text-center lg:text-left"
           >
-            <h2 className="text-3xl md:text-5xl font-bold text-slate-900">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-slate-900 leading-tight">
               {language === "en" ? "Teachings of Guru Nanak Dev Ji" : "ਸ਼੍ਰੀ ਗੁਰੂ ਨਾਨਕ ਦੇਵ ਜੀ ਦੀਆਂ ਸਿੱਖਿਆਵਾਂ"}
             </h2>
-            <div className="w-20 h-1 bg-blue-600 rounded-full"></div>
+            <div className="w-16 md:w-20 h-1 bg-blue-600 rounded-full mx-auto lg:mx-0"></div>
             
-            <div className="prose prose-lg text-slate-600">
+            <div className="prose prose-slate max-w-none text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed space-y-3">
               <p>
                 {language === "en" 
                   ? "Guru Nanak Dev Ji's teachings are founded on the principles of equality, fraternal love, goodness, and virtue. The core of his philosophy is to remember God at all times (Naam Japo), earn a righteous living (Kirat Karo), and share what you have with others (Vand Chhako)."
@@ -53,9 +55,9 @@ export default function AboutGuruji() {
               </p>
             </div>
             
-            <blockquote className="border-l-4 border-blue-600 pl-6 py-2 mt-8 bg-blue-50 rounded-r-lg">
-              <p className="text-xl italic text-blue-900 font-medium">
-                "There is but One God. His name is Truth; He is the Creator."
+            <blockquote className="border-l-4 border-blue-600 pl-4 md:pl-6 py-2.5 mt-4 md:mt-8 bg-blue-50/80 rounded-r-lg text-left">
+              <p className="text-base sm:text-lg md:text-xl italic text-blue-900 font-medium">
+                &ldquo;There is but One God. His name is Truth; He is the Creator.&rdquo;
               </p>
             </blockquote>
           </motion.div>
